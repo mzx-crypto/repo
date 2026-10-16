@@ -1,4 +1,3 @@
-# file: .github/workflows/build_apk.yml
 name: Build Standalone Android APK
 
 on:

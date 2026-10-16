@@ -1,4 +1,3 @@
-# file: www/sw.js
 const CACHE_NAME = "ym-standalone-shell-v2";
 const ASSETS = [
     "./",
