@@ -7,238 +7,548 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="manifest.json">
-<title>Яндекс Музыка — Автономная Волна</title>
+<title>Яндекс Музыка</title>
 <style>
 :root {
     --bg: #000000;
-    --surface: #141414;
-    --surface-hover: #222222;
-    --accent: #fed42b;
+    --card: #1c1c1e;
+    --card-glass: rgba(34, 34, 38, 0.88);
+    --yellow: #ffea00;
+    --green: #2ecc71;
     --text: #ffffff;
     --muted: #8e8e93;
-    --online: #4caf50;
-    --offline: #ff5722;
 }
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
 body {
-    margin: 0; padding: 0;
-    background: var(--bg); color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    overflow-x: hidden; padding-bottom: 185px; user-select: none;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+    overflow-x: hidden;
+    padding-bottom: 145px;
+    user-select: none;
 }
-.header {
+.screen { display: none; min-height: calc(100vh - 145px); }
+.screen.active { display: block; animation: fade 0.18s ease-out; }
+@keyframes fade { from { opacity: 0.4; } to { opacity: 1; } }
+
+/* ЭКРАН 1: МОЯ ВОЛНА (КАК НА СКРИНШОТЕ 1) */
+.wave-top-bar {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 18px; position: sticky; top: 0; z-index: 20;
-    background: rgba(0, 0, 0, 0.86); backdrop-filter: blur(18px);
+    padding: 14px 18px; position: relative; z-index: 10;
 }
-.logo { font-size: 19px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
-.badge { font-size: 10px; padding: 3px 8px; border-radius: 10px; font-weight: 800; background: var(--accent); color: #000; }
-.net-pill { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 12px; background: #1f1f1f; }
-.net-pill.online { color: var(--online); border: 1px solid rgba(76,175,80,0.4); }
-.net-pill.offline { color: var(--offline); border: 1px solid rgba(255,87,34,0.4); }
+.plus-circle {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: #fff; color: #000; font-weight: 900; font-size: 20px;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.wave-filter-pill {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(30, 30, 30, 0.85); border-radius: 20px;
+    padding: 7px 14px; font-size: 14px; font-weight: 800; color: var(--yellow);
+}
+.wave-filter-close {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--yellow); color: #000; font-size: 12px; font-weight: 900;
+    display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.icon-search-btn {
+    background: none; border: none; color: #fff; cursor: pointer;
+    width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+}
 
-.view { display: none; padding: 0 16px; }
-.view.active { display: block; }
-
-.wave-hero {
+.hero-stage {
     position: relative; display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    height: 280px; margin: 6px 0 14px; border-radius: 28px;
-    background: radial-gradient(circle at 50% 50%, rgba(254, 212, 43, 0.25), rgba(124, 77, 255, 0.12) 60%, transparent 78%);
-    overflow: hidden;
+    padding: 10px 20px 18px; overflow: hidden;
 }
-.wave-orb {
-    width: 165px; height: 165px; border-radius: 50%;
-    background: conic-gradient(from 0deg, #fed42b, #ff5722, #e91e63, #7c4dff, #00e5ff, #fed42b);
-    filter: blur(22px); opacity: 0.72;
-    animation: orbSpin 8s linear infinite; position: absolute;
+.hero-Typed-glow {
+    position: absolute; width: 320px; height: 320px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,214,0,0.55) 0%, rgba(255,87,34,0.35) 45%, rgba(156,39,176,0.2) 70%, transparent 85%);
+    filter: blur(28px); z-index: 1; transition: transform 0.4s ease;
 }
-.wave-orb.playing { animation-duration: 2.2s; transform: scale(1.22); opacity: 0.96; filter: blur(16px); }
-@keyframes orbSpin {
-    0% { transform: rotate(0deg) scale(1); }
-    50% { transform: rotate(180deg) scale(1.14); }
-    100% { transform: rotate(360deg) scale(1); }
+.hero-Typed-glow.playing { animation: pulseGlow 3s ease-in-out infinite; }
+@keyframes pulseGlow {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    50% { transform: scale(1.14) rotate(12deg); }
 }
-.wave-btn {
+.hero-artist-bg-title {
     position: relative; z-index: 2;
-    background: rgba(18, 18, 18, 0.78); backdrop-filter: blur(14px);
-    border: 1.5px solid rgba(255, 255, 255, 0.2);
-    color: #fff; padding: 15px 30px; border-radius: 40px;
-    font-size: 18px; font-weight: 800; cursor: pointer;
-    display: flex; align-items: center; gap: 10px;
-    box-shadow: 0 12px 32px rgba(0,0,0,0.65);
+    font-size: 46px; font-weight: 900; letter-spacing: 1px;
+    text-transform: uppercase; color: #ffffff;
+    text-shadow: 0 4px 24px rgba(0,0,0,0.6);
+    margin-bottom: -18px; text-align: center;
+    max-width: 95%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.wave-sub { position: relative; z-index: 2; margin-top: 10px; font-size: 12px; color: #ccc; text-align: center; max-width: 88%; }
-
-.chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
-.chips::-webkit-scrollbar { display: none; }
-.chip {
-    background: var(--surface); color: var(--text); border: 1px solid #282828;
-    padding: 8px 15px; border-radius: 20px; font-size: 13px; font-weight: 600;
-    white-space: nowrap; cursor: pointer;
-}
-.chip.active { background: var(--accent); color: #000; border-color: var(--accent); }
-
-.search-bar { display: flex; gap: 8px; margin-bottom: 14px; }
-.search-input {
-    flex: 1; background: var(--surface); color: #fff;
-    border: 1px solid #2c2c2c; border-radius: 14px;
-    padding: 12px 15px; font-size: 15px; outline: none;
-}
-.search-submit {
-    background: var(--accent); color: #000; border: none;
-    border-radius: 14px; padding: 0 18px; font-weight: 700; cursor: pointer;
-}
-
-.section-title { font-size: 16px; font-weight: 700; margin: 12px 0 8px; display: flex; justify-content: space-between; align-items: center; }
-.track-list { display: flex; flex-direction: column; gap: 6px; }
-.track-card {
-    display: flex; align-items: center; gap: 12px;
-    padding: 8px 10px; border-radius: 14px;
-    background: var(--surface); transition: background 0.15s; cursor: pointer;
-}
-.track-card.active { border: 1px solid var(--accent); background: var(--surface-hover); }
-.track-cover { width: 48px; height: 48px; border-radius: 10px; object-fit: cover; background: #222; flex-shrink: 0; }
-.track-meta { flex: 1; min-width: 0; }
-.track-title { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.track-artist { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
-.tag-pill {
-    display: inline-block; font-size: 10px; padding: 1px 6px;
-    border-radius: 6px; background: #2a2a2a; color: #bbb; margin-left: 5px;
-}
-.tag-pill.discovery { background: rgba(124, 77, 255, 0.25); color: #b388ff; }
-.icon-btn {
-    background: none; border: none; color: var(--muted);
-    font-size: 18px; padding: 6px 8px; cursor: pointer;
-}
-.icon-btn.liked { color: var(--accent); }
-.icon-btn.saved { color: var(--online); }
-
-.player-dock {
-    position: fixed; bottom: 60px; left: 0; right: 0; z-index: 30;
-    background: rgba(16, 16, 16, 0.97); backdrop-filter: blur(22px);
-    border-top: 1px solid #282828; padding: 10px 14px;
-}
-.player-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-.mini-cover { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; background: #222; }
-.mini-meta { flex: 1; min-width: 0; }
-.mini-title { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.mini-sub { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ctrl-btn {
-    background: var(--accent); color: #000; border: none;
-    width: 38px; height: 38px; border-radius: 50%;
-    font-size: 16px; font-weight: 800; cursor: pointer;
+.hero-portrait-wrap {
+    position: relative; z-index: 3;
+    width: 240px; height: 250px;
     display: flex; align-items: center; justify-content: center;
 }
-.ctrl-btn.secondary { background: #262626; color: #fff; width: 34px; height: 34px; font-size: 13px; }
-.progress-wrap { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); }
-.progress-bar { flex: 1; accent-color: var(--accent); height: 4px; cursor: pointer; }
+.hero-portrait {
+    width: 230px; height: 230px; border-radius: 26px;
+    object-fit: cover; box-shadow: 0 18px 40px rgba(0,0,0,0.75);
+}
+.hero-yellow-play {
+    position: absolute; bottom: 12px; z-index: 5;
+    width: 86px; height: 86px; border-radius: 50%;
+    background: var(--yellow); color: #000; border: none;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px; cursor: pointer;
+    box-shadow: 0 10px 28px rgba(255, 234, 0, 0.45);
+    transition: transform 0.12s ease;
+}
+.hero-yellow-play:active { transform: scale(0.93); }
 
-.bottom-nav {
-    position: fixed; bottom: 0; left: 0; right: 0; height: 60px; z-index: 35;
-    background: #080808; border-top: 1px solid #1f1f1f;
+.track-pill-bar {
+    position: relative; z-index: 5;
+    width: calc(100% - 44px); max-width: 380px; height: 52px;
+    margin: 8px auto 14px; border-radius: 16px;
+    background: rgba(38, 38, 42, 0.92); backdrop-filter: blur(16px);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 16px;
+}
+.track-pill-title-wrap {
+    flex: 1; text-align: center; padding-left: 28px;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    min-width: 0;
+}
+.track-pill-title {
+    font-size: 16px; font-weight: 700; color: #fff;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.badge-18 {
+    font-size: 10px; font-weight: 700; color: #aaa;
+    border: 1px solid #666; border-radius: 4px; padding: 1px 4px; flex-shrink: 0;
+}
+.pill-heart-btn {
+    background: none; border: none; color: #fff; font-size: 22px;
+    cursor: pointer; padding-left: 12px; border-left: 1px solid rgba(255,255,255,0.08);
+}
+.pill-heart-btn.liked { color: var(--yellow); }
+
+.offline-notice {
+    display: flex; align-items: center; justify-content: center; gap: 14px;
+    margin: 8px 24px 18px; color: #d0d0d0; text-align: center;
+}
+.offline-notice-text { font-size: 14px; font-weight: 600; line-height: 1.35; }
+.offline-notice-sub { font-size: 13px; color: var(--muted); margin-top: 3px; cursor: pointer; }
+
+.style-bubbles-row {
+    display: flex; align-items: flex-end; justify-content: space-around;
+    padding: 10px 12px 16px; gap: 8px; overflow-x: auto; scrollbar-width: none;
+}
+.style-bubbles-row::-webkit-scrollbar { display: none; }
+.style-bubble {
+    width: 128px; height: 150px; border-radius: 64px 64px 28px 28px;
+    background: radial-gradient(circle at 50% 35%, rgba(0, 188, 212, 0.45), rgba(0, 77, 96, 0.25) 65%, transparent 95%);
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    padding-top: 10px; cursor: pointer; flex-shrink: 0; text-align: center;
+}
+.style-bubble img {
+    width: 64px; height: 64px; border-radius: 50%; object-fit: cover;
+    margin-bottom: 8px; border: 2px solid rgba(255,255,255,0.15);
+}
+.style-bubble-sub { font-size: 11px; color: #80deea; font-weight: 500; }
+.style-bubble-name { font-size: 14px; font-weight: 800; color: #fff; margin-top: 2px; }
+
+.reset-wave-btn {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: var(--yellow); font-size: 13px; font-weight: 700;
+    cursor: pointer; padding-bottom: 18px; flex-shrink: 0; text-align: center;
+}
+.reset-wave-icon { font-size: 32px; margin-bottom: 4px; }
+
+/* ЭКРАН 2: ЧТО ПОСЛУШАТЬ (КАК НА СКРИНШОТЕ 2) */
+.screen-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 18px 14px;
+}
+.screen-title { font-size: 24px; font-weight: 800; letter-spacing: -0.4px; }
+
+.quick-categories {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 10px; padding: 6px 18px 20px; text-align: center;
+}
+.cat-item { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; }
+.cat-icon-box {
+    width: 62px; height: 62px; border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px; box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+}
+.cat-trends { background: linear-gradient(135deg, #ff2a5f, #ff7e47); }
+.cat-books { background: linear-gradient(135deg, #1e88e5, #64b5f6); }
+.cat-kids { background: linear-gradient(135deg, #ff9800, #ffc107); }
+.cat-podcasts { background: linear-gradient(135deg, #00c853, #69f0ae); }
+.cat-label { font-size: 13px; font-weight: 600; color: #eee; }
+
+.mini-playlists-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    padding: 0 18px 22px;
+}
+.mini-pl-card {
+    display: flex; align-items: center; gap: 10px; cursor: pointer;
+}
+.mini-pl-cover {
+    width: 54px; height: 54px; border-radius: 10px; object-fit: cover; flex-shrink: 0;
+}
+.mini-pl-title { font-size: 15px; font-weight: 700; color: #fff; }
+.mini-pl-sub { font-size: 13px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 110px; }
+
+.ai-set-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 0 18px 12px; overflow-x: auto; scrollbar-width: none;
+}
+.ai-set-title { font-size: 22px; font-weight: 800; white-space: nowrap; margin-right: 4px; }
+.ai-tab {
+    background: #1c1c1e; color: var(--muted); border: none;
+    padding: 7px 15px; border-radius: 18px; font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap;
+}
+.ai-tab.active { background: #2c2c2e; color: #fff; }
+
+.ai-banner {
+    margin: 0 18px 26px; height: 78px; border-radius: 18px;
+    background: linear-gradient(120deg, #9c64f4 0%, #b388ff 50%, #7c4dff 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer; box-shadow: 0 8px 24px rgba(124, 77, 255, 0.3);
+}
+.ai-banner-sub { font-size: 13px; color: rgba(255,255,255,0.85); font-weight: 600; }
+.ai-banner-main { font-size: 22px; font-weight: 900; color: #fff; margin-top: 2px; }
+
+.new-releases-section { text-align: center; padding: 0 18px 20px; }
+.new-releases-title { font-size: 22px; font-weight: 800; margin-bottom: 16px; display: inline-flex; align-items: center; gap: 6px; }
+.release-circle-wrap {
+    width: 280px; height: 280px; margin: 0 auto; border-radius: 50%;
+    overflow: hidden; border: 2px solid #222; cursor: pointer;
+}
+.release-circle-wrap img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ЭКРАН 3: КОЛЛЕКЦИЯ (КАК НА СКРИНШОТЕ 3) */
+.collection-header-card {
+    margin: 12px 14px 6px; padding: 18px 16px; border-radius: 20px;
+    background: linear-gradient(180deg, #2a082e 0%, #4a0e4e 65%, #d500f9 100%);
+    position: relative; overflow: hidden;
+}
+.collection-top-row {
+    display: flex; align-items: center; justify-content: space-between;
+}
+.collection-wave-caption {
+    text-align: center; color: rgba(255,255,255,0.55); font-size: 13px; font-weight: 600;
+}
+.collection-color-note {
+    text-align: center; font-size: 13px; color: var(--muted); margin-bottom: 18px;
+}
+.collection-color-note span { color: #e040fb; font-weight: 700; }
+
+.likes-hero-row {
+    display: flex; align-items: center; gap: 16px; padding: 0 18px 16px; cursor: pointer;
+}
+.heart-3d {
+    width: 58px; height: 58px; border-radius: 16px;
+    background: radial-gradient(circle at 30% 30%, #ff8a80, #e53935 60%, #8e0000);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px; color: #fff; box-shadow: 0 8px 20px rgba(229,57,53,0.4);
+}
+.likes-hero-title { font-size: 22px; font-weight: 800; }
+.likes-hero-count { font-size: 14px; color: var(--muted); margin-top: 2px; }
+
+.track-rows-container { padding: 0 18px; display: flex; flex-direction: column; gap: 12px; }
+.ym-track-row {
+    display: flex; align-items: center; gap: 12px; cursor: pointer;
+}
+.ym-track-cover {
+    width: 52px; height: 52px; border-radius: 8px; object-fit: cover; background: #222; flex-shrink: 0;
+}
+.ym-track-info { flex: 1; min-width: 0; }
+.ym-track-name {
+    font-size: 16px; font-weight: 600; color: #fff;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    display: flex; align-items: center; gap: 6px;
+}
+.ym-track-artist {
+    font-size: 14px; color: var(--muted); margin-top: 2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ym-dl-btn {
+    background: none; border: none; color: var(--muted);
+    font-size: 18px; font-weight: 800; cursor: pointer; padding: 6px;
+}
+.ym-dl-btn.downloaded { color: var(--green); }
+.ym-more-btn {
+    background: none; border: none; color: var(--muted);
+    font-size: 18px; cursor: pointer; padding: 6px;
+}
+
+.fav-artists-title {
+    font-size: 21px; font-weight: 800; padding: 26px 18px 14px;
+}
+.fav-artists-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 0 18px 20px; text-align: center;
+}
+.fav-artist-card { cursor: pointer; }
+.fav-artist-avatar {
+    width: 145px; height: 145px; border-radius: 50%; object-fit: cover;
+    margin: 0 auto 10px; display: block; background: #141414;
+}
+.fav-artist-rank { font-size: 15px; font-weight: 700; color: #fff; }
+.fav-artist-name { font-size: 16px; font-weight: 700; color: #fff; margin-top: 2px; }
+
+/* МОДАЛЬНОЕ ОКНО ПОИСКА */
+.search-modal {
+    display: none; position: fixed; inset: 0; z-index: 60;
+    background: #000; padding: 16px 18px 140px; overflow-y: auto;
+}
+.search-modal.open { display: block; }
+.search-top-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 18px; }
+.search-field {
+    flex: 1; background: #1c1c1e; color: #fff; border: 1px solid #333;
+    padding: 12px 16px; border-radius: 14px; font-size: 16px; outline: none;
+}
+.search-close-btn {
+    background: none; border: none; color: var(--yellow); font-size: 15px; font-weight: 700; cursor: pointer;
+}
+
+/* НИЖНИЙ ПЛАВАЮЩИЙ МИНИ-ПЛЕЕР И ТАБ-БАР (КАК НА СКРИНШОТАХ 2 И 3) */
+.floating-mini-player {
+    position: fixed; bottom: 64px; left: 12px; right: 12px; height: 60px; z-index: 45;
+    background: #2b2b2e; border-radius: 14px;
+    display: flex; align-items: center; padding: 0 12px; gap: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.75);
+}
+.fp-cover { width: 42px; height: 42px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
+.fp-info { flex: 1; min-width: 0; cursor: pointer; }
+.fp-title {
+    font-size: 15px; font-weight: 700; color: #fff;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    display: flex; align-items: center; gap: 5px;
+}
+.fp-artist { font-size: 13px; color: #aaa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fp-btn {
+    background: none; border: none; color: #fff; font-size: 22px;
+    cursor: pointer; padding: 8px; display: flex; align-items: center; justify-content: center;
+}
+.fp-btn.liked { color: var(--yellow); }
+.fp-progress {
+    position: absolute; bottom: 0; left: 10px; right: 10px; height: 2px;
+    background: rgba(255,255,255,0.12); overflow: hidden; border-radius: 2px;
+}
+.fp-progress-fill { height: 100%; width: 0%; background: var(--yellow); transition: width 0.2s linear; }
+
+.ym-bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0; height: 60px; z-index: 50;
+    background: #000000; border-top: 1px solid #161616;
     display: flex; justify-content: space-around; align-items: center;
 }
-.nav-tab {
-    display: flex; flex-direction: column; align-items: center; gap: 3px;
-    color: var(--muted); font-size: 11px; font-weight: 600;
-    background: none; border: none; cursor: pointer; flex: 1; padding: 6px 0;
+.ym-tab {
+    background: none; border: none; color: #777; cursor: pointer;
+    flex: 1; height: 100%; display: flex; align-items: center; justify-content: center;
 }
-.nav-tab.active { color: var(--accent); }
+.ym-tab.active { color: var(--yellow); }
+.ym-tab svg { width: 26px; height: 26px; fill: currentColor; }
 </style>
 </head>
 <body>
 
-<div class="header">
-    <div class="logo">
-        <span>Яндекс Музыка</span>
-        <span class="badge">STANDALONE</span>
-    </div>
-    <div id="net-status" class="net-pill online">● ОНЛАЙН</div>
-</div>
-
-<!-- ВКЛАДКА 1: МОЯ ВОЛНА -->
-<div id="view-wave" class="view active">
-    <div class="wave-hero">
-        <div id="orb" class="wave-orb"></div>
-        <button class="wave-btn" onclick="togglePlayWave()">
-            <span id="hero-play-icon">▶</span>
-            <span>Моя волна</span>
-        </button>
-        <div id="wave-sub" class="wave-sub">Акустический подбор: 75% твой вайб / 25% новые горизонты</div>
-    </div>
-
-    <div class="chips">
-        <button class="chip active" onclick="selectAcousticFilter('all', this)">Поток по вкусу</button>
-        <button class="chip" onclick="selectAcousticFilter('rusrap', this)">Русский рэп / бит</button>
-        <button class="chip" onclick="selectAcousticFilter('phonk', this)">Фонк / перегруз</button>
-        <button class="chip" onclick="selectAcousticFilter('indie', this)">Пост-панк / инди</button>
-        <button class="chip" onclick="selectAcousticFilter('electro', this)">Электроника / синт</button>
-    </div>
-
-    <div class="section-title">
-        <span>Очередь волны</span>
-        <button class="chip" onclick="rebuildWaveQueue()">↻ Обновить вектор</button>
-    </div>
-    <div id="wave-list" class="track-list"></div>
-</div>
-
-<!-- ВКЛАДКА 2: ПОИСК ОНЛАЙН -->
-<div id="view-search" class="view">
-    <form class="search-bar" onsubmit="handleSearch(event)">
-        <input id="search-input" class="search-input" type="text" placeholder="Поиск по звучанию, жанру, артисту...">
-        <button class="search-submit" type="submit">Найти</button>
-    </form>
-    <div id="search-list" class="track-list"></div>
-</div>
-
-<!-- ВКЛАДКА 3: ОФЛАЙН И ЛАЙКИ -->
-<div id="view-library" class="view">
-    <div class="section-title">
-        <span>Скачано в телефон (Офлайн-память)</span>
-        <span id="profile-summary" style="font-size:11px;color:var(--accent);"></span>
-    </div>
-    <div id="offline-list" class="track-list"></div>
-
-    <div class="section-title" style="margin-top:20px;">Мне нравится (Вкусовой профиль)</div>
-    <div id="liked-list" class="track-list"></div>
-</div>
-
-<!-- НАТИВНЫЙ HTML5 ПЛЕЕР (БЕЗ ЗАВИСАЮЩИХ IFRAME) -->
-<div class="player-dock">
-    <div class="player-top">
-        <img id="p-cover" class="mini-cover" src="https://music.yandex.ru/blocks/meta/i/og-image.png" alt="">
-        <div class="mini-meta">
-            <div id="p-title" class="mini-title">Готов к воспроизведению</div>
-            <div id="p-artist" class="mini-sub">Нажми «Моя волна» для старта</div>
+<!-- ЭКРАН 1: МОЯ ВОЛНА -->
+<section id="screen-wave" class="screen active">
+    <div class="wave-top-bar">
+        <div class="plus-circle" onclick="downloadCurrentTrack()" title="Скачать текущий трек в память телефона">+</div>
+        <div class="wave-filter-pill">
+            <span id="active-wave-tag">100 хитов русского рэпа</span>
+            <span class="wave-filter-close" onclick="resetWaveToDefault(event)">✕</span>
         </div>
-        <button id="p-dl-btn" class="ctrl-btn secondary" onclick="downloadCurrentTrack()" title="Скачать в телефон">⬇</button>
-        <button id="p-play-btn" class="ctrl-btn" onclick="toggleAudio()">▶</button>
-        <button class="ctrl-btn secondary" onclick="playNextInQueue()">⏭</button>
+        <button class="icon-search-btn" onclick="openSearchModal()">
+            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.2" fill="none"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.5" y2="16.5"/></svg>
+        </button>
     </div>
-    <div class="progress-wrap">
-        <span id="t-cur">0:00</span>
-        <input id="t-seek" class="progress-bar" type="range" min="0" max="100" value="0" oninput="seekAudio(this.value)">
-        <span id="t-dur">0:00</span>
+
+    <div class="hero-stage">
+        <div id="hero-glow" class="hero-Typed-glow"></div>
+        <div id="hero-artist-big" class="hero-artist-bg-title">АДЛИН</div>
+        <div class="hero-portrait-wrap">
+            <img id="hero-cover" class="hero-portrait" src="https://avatars.yandex.net/get-music-content/10126146/b3b5f8a2.a.29491201-1/m1000x1000" alt="">
+            <button id="hero-play-btn" class="hero-yellow-play" onclick="toggleAudioPlayback()">▶</button>
+        </div>
     </div>
-    <audio id="audio-engine" preload="auto" crossorigin="anonymous"></audio>
+
+    <div class="track-pill-bar">
+        <div class="track-pill-title-wrap" onclick="playNextWaveTrack()">
+            <span id="hero-track-title" class="track-pill-title">No Love</span>
+            <span class="badge-18">18+</span>
+        </div>
+        <button id="hero-like-btn" class="pill-heart-btn" onclick="toggleCurrentLike()">♡</button>
+    </div>
+
+    <div class="offline-notice">
+        <span style="font-size:22px;">✦</span>
+        <div>
+            <div id="stream-status-line" class="offline-notice-text">Полный поток активен • Офлайн-кэш готов</div>
+            <div class="offline-notice-sub" onclick="downloadCurrentTrack()">Скачайте любимые треки в память</div>
+        </div>
+    </div>
+
+    <div class="style-bubbles-row">
+        <div class="style-bubble" onclick="startArtistStyleWave('тёмный принц', 'В стиле тёмный принц')">
+            <img id="bubble-img-1" src="https://music.yandex.ru/blocks/meta/i/og-image.png" alt="">
+            <div class="style-bubble-sub">В стиле артиста</div>
+            <div class="style-bubble-name">тёмный принц</div>
+        </div>
+
+        <div class="reset-wave-btn" onclick="resetWaveToDefault(event)">
+            <div class="reset-wave-icon">↩</div>
+            <div>Назад к<br>привычному</div>
+        </div>
+
+        <div class="style-bubble" onclick="startArtistStyleWave('madk1d', 'В стиле madk1d')">
+            <img id="bubble-img-2" src="https://music.yandex.ru/blocks/meta/i/og-image.png" alt="">
+            <div class="style-bubble-sub">В стиле артиста</div>
+            <div class="style-bubble-name">madk1d</div>
+        </div>
+    </div>
+</section>
+
+<!-- ЭКРАН 2: ЧТО ПОСЛУШАТЬ -->
+<section id="screen-explore" class="screen">
+    <div class="screen-header">
+        <div class="screen-title">Что послушать</div>
+        <button class="icon-search-btn" onclick="openSearchModal()">
+            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.2" fill="none"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.5" y2="16.5"/></svg>
+        </button>
+    </div>
+
+    <div class="quick-categories">
+        <div class="cat-item" onclick="startArtistStyleWave('kizaru Fake ID', 'Тренды')">
+            <div class="cat-icon-box cat-trends">⚡</div>
+            <div class="cat-label">Тренды</div>
+        </div>
+        <div class="cat-item" onclick="startArtistStyleWave('АДЛИН', 'Аудиосеты')">
+            <div class="cat-icon-box cat-books">📘</div>
+            <div class="cat-label">Книги</div>
+        </div>
+        <div class="cat-item" onclick="startArtistStyleWave('спокойный бит', 'Фоновый поток')">
+            <div class="cat-icon-box cat-kids">🐥</div>
+            <div class="cat-label">Детям</div>
+        </div>
+        <div class="cat-item" onclick="startArtistStyleWave('русский пост панк', 'Подборка')">
+            <div class="cat-icon-box cat-podcasts">🎙</div>
+            <div class="cat-label">Подкасты</div>
+        </div>
+    </div>
+
+    <div class="mini-playlists-row">
+        <div class="mini-pl-card" onclick="switchScreen('collection', document.getElementById('tab-col'))">
+            <img id="explore-like-cover" class="mini-pl-cover" src="https://music.yandex.ru/blocks/meta/i/og-image.png" alt="">
+            <div>
+                <div class="mini-pl-title">Мне нравится</div>
+                <div id="explore-like-count" class="mini-pl-sub">0 треков</div>
+            </div>
+        </div>
+        <div class="mini-pl-card" onclick="playHistoryLast()">
+            <img id="explore-hist-cover" class="mini-pl-cover" src="https://music.yandex.ru/blocks/meta/i/og-image.png" alt="">
+            <div>
+                <div class="mini-pl-title">История</div>
+                <div id="explore-hist-sub" class="mini-pl-sub">АДЛИН, kizaru</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ai-set-header">
+        <div class="ai-set-title">Свели в AI-сет</div>
+        <button class="ai-tab active" onclick="startArtistStyleWave('русский рэп топ', 'Топ AI-сет')">топ</button>
+        <button class="ai-tab" onclick="startArtistStyleWave('электроника фонк', 'Электро')">по жанру</button>
+        <button class="ai-tab" onclick="startArtistStyleWave('ночной вайб', 'Под настроение')">под настр</button>
+    </div>
+
+    <div class="ai-banner" onclick="startArtistStyleWave('дарк электро фонк', 'Сет: Электро')">
+        <div class="ai-banner-sub">Сет Моей волны по жанру</div>
+        <div class="ai-banner-main">▶ Электро</div>
+    </div>
+
+    <div class="new-releases-section">
+        <div class="new-releases-title" onclick="startArtistStyleWave('kizaru Fake ID', 'Новые релизы')">Новые релизы ›</div>
+        <div class="release-circle-wrap" onclick="startArtistStyleWave('АДЛИН No Love', 'Новые релизы')">
+            <img id="explore-hero-circle" src="https://music.yandex.ru/blocks/meta/i/og-image.png" alt="">
+        </div>
+    </div>
+</section>
+
+<!-- ЭКРАН 3: КОЛЛЕКЦИЯ -->
+<section id="screen-collection" class="screen">
+    <div class="collection-header-card">
+        <div class="collection-top-row">
+            <div class="screen-title">Коллекция</div>
+            <div class="collection-wave-caption" onclick="switchScreen('wave', document.getElementById('tab-wave'))">
+                Моя волна по коллекции<br><b>▶ Коллекция</b>
+            </div>
+            <button class="icon-search-btn" onclick="openSearchModal()">
+                <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2.2" fill="none"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.5" y2="16.5"/></svg>
+            </button>
+        </div>
+    </div>
+    <div class="collection-color-note">У вашей музыки есть <span>цвет</span></div>
+
+    <div class="likes-hero-row" onclick="playSavedCollection()">
+        <div class="heart-3d">♥</div>
+        <div>
+            <div class="likes-hero-title">Мне нравится ›</div>
+            <div id="col-likes-count" class="likes-hero-count">0 треков</div>
+        </div>
+    </div>
+
+    <div id="collection-tracks-box" class="track-rows-container"></div>
+
+    <div class="fav-artists-title">Любимые исполнители ›</div>
+    <div class="fav-artists-row">
+        <div class="fav-artist-card" onclick="startArtistStyleWave('kizaru', 'В стиле kizaru')">
+            <img id="fav-art-1" class="fav-artist-avatar" src="https://music.yandex.ru/blocks/meta/i/og-image.png" alt="">
+            <div class="fav-artist-rank">1 👑</div>
+            <div class="fav-artist-name">kizaru</div>
+        </div>
+        <div class="fav-artist-card" onclick="startArtistStyleWave('Kai Angel', 'В стиле Kai Angel')">
+            <img id="fav-art-2" class="fav-artist-avatar" src="https://music.yandex.ru/blocks/meta/i/og-image.png" alt="">
+            <div class="fav-artist-rank">2 —</div>
+            <div class="fav-artist-name">Kai Angel</div>
+        </div>
+    </div>
+</section>
+
+<!-- МОДАЛЬНОЕ ОКНО ПОИСКА (НАХОДИТ ЛЮБЫЕ ТРЕКИ ВКЛЮЧАЯ KIZARU - FAKE ID) -->
+<div id="search-modal" class="search-modal">
+    <form class="search-top-bar" onsubmit="submitSearchForm(event)">
+        <input id="search-query-input" class="search-field" type="text" placeholder="kizaru - Fake ID, АДЛИН, madk1d...">
+        <button type="button" class="search-close-btn" onclick="closeSearchModal()">Закрыть</button>
+    </form>
+    <div id="search-results-box" class="track-rows-container"></div>
 </div>
 
-<nav class="bottom-nav">
-    <button class="nav-tab active" onclick="switchView('wave', this)">
-        <span>◉</span>
-        <span>Моя волна</span>
+<!-- ПЛАВАЮЩИЙ МИНИ-ПЛЕЕР -->
+<div class="floating-mini-player">
+    <img id="fp-cover" class="fp-cover" src="https://music.yandex.ru/blocks/meta/i/og-image.png" alt="">
+    <div class="fp-info" onclick="switchScreen('wave', document.getElementById('tab-wave'))">
+        <div class="fp-title">
+            <span id="fp-title-text">No Love</span>
+            <span class="badge-18">18+</span>
+        </div>
+        <div id="fp-artist-text" class="fp-artist">АДЛИН</div>
+    </div>
+    <button id="fp-like-btn" class="fp-btn" onclick="toggleCurrentLike()">♡</button>
+    <button id="fp-play-btn" class="fp-btn" onclick="toggleAudioPlayback()">▶</button>
+    <div class="fp-progress"><div id="fp-bar-fill" class="fp-progress-fill"></div></div>
+</div>
+
+<!-- НИЖНИЙ НАВИГАЦИОННЫЙ БАР КАК В ОРИГИНАЛЕ -->
+<nav class="ym-bottom-nav">
+    <button id="tab-wave" class="ym-tab active" onclick="switchScreen('wave', this)">
+        <svg viewBox="0 0 24 24"><path d="M12 2L14.2 8.8L21 9.5L15.8 14L17.5 21L12 17.2L6.5 21L8.2 14L3 9.5L9.8 8.8L12 2Z"/></svg>
     </button>
-    <button class="nav-tab" onclick="switchView('search', this)">
-        <span>⌕</span>
-        <span>Поиск</span>
+    <button id="tab-explore" class="ym-tab" onclick="switchScreen('explore', this)">
+        <svg viewBox="0 0 24 24"><path d="M12 3V13.55C11.41 13.21 10.73 13 10 13C7.79 13 6 14.79 6 17C6 19.21 7.79 21 10 21C12.21 21 14 19.21 14 17V7H18V3H12Z"/></svg>
     </button>
-    <button class="nav-tab" onclick="switchView('library', this)">
-        <span>⬇</span>
-        <span>Офлайн / База</span>
+    <button id="tab-col" class="ym-tab" onclick="switchScreen('collection', this)">
+        <svg viewBox="0 0 24 24"><path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z"/></svg>
     </button>
 </nav>
 
+<audio id="audio-player" preload="auto" crossorigin="anonymous"></audio>
 <script src="app.js"></script>
 </body>
 </html>
