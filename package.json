@@ -1,0 +1,15 @@
+# file: package.json
+{
+  "name": "ym-standalone-mobile",
+  "version": "2.0.0",
+  "private": true,
+  "scripts": {
+    "cap:init": "npx cap add android",
+    "cap:sync": "npx cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/cli": "^6.1.2",
+    "@capacitor/core": "^6.1.2"
+  }
+}

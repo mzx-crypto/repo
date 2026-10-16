@@ -1,0 +1,245 @@
+# file: www/index.html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<title>Яндекс Музыка — Автономная Волна</title>
+<style>
+:root {
+    --bg: #000000;
+    --surface: #141414;
+    --surface-hover: #222222;
+    --accent: #fed42b;
+    --text: #ffffff;
+    --muted: #8e8e93;
+    --online: #4caf50;
+    --offline: #ff5722;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body {
+    margin: 0; padding: 0;
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    overflow-x: hidden; padding-bottom: 185px; user-select: none;
+}
+.header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 18px; position: sticky; top: 0; z-index: 20;
+    background: rgba(0, 0, 0, 0.86); backdrop-filter: blur(18px);
+}
+.logo { font-size: 19px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+.badge { font-size: 10px; padding: 3px 8px; border-radius: 10px; font-weight: 800; background: var(--accent); color: #000; }
+.net-pill { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 12px; background: #1f1f1f; }
+.net-pill.online { color: var(--online); border: 1px solid rgba(76,175,80,0.4); }
+.net-pill.offline { color: var(--offline); border: 1px solid rgba(255,87,34,0.4); }
+
+.view { display: none; padding: 0 16px; }
+.view.active { display: block; }
+
+.wave-hero {
+    position: relative; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    height: 280px; margin: 6px 0 14px; border-radius: 28px;
+    background: radial-gradient(circle at 50% 50%, rgba(254, 212, 43, 0.25), rgba(124, 77, 255, 0.12) 60%, transparent 78%);
+    overflow: hidden;
+}
+.wave-orb {
+    width: 165px; height: 165px; border-radius: 50%;
+    background: conic-gradient(from 0deg, #fed42b, #ff5722, #e91e63, #7c4dff, #00e5ff, #fed42b);
+    filter: blur(22px); opacity: 0.72;
+    animation: orbSpin 8s linear infinite; position: absolute;
+}
+.wave-orb.playing { animation-duration: 2.2s; transform: scale(1.22); opacity: 0.96; filter: blur(16px); }
+@keyframes orbSpin {
+    0% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(180deg) scale(1.14); }
+    100% { transform: rotate(360deg) scale(1); }
+}
+.wave-btn {
+    position: relative; z-index: 2;
+    background: rgba(18, 18, 18, 0.78); backdrop-filter: blur(14px);
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
+    color: #fff; padding: 15px 30px; border-radius: 40px;
+    font-size: 18px; font-weight: 800; cursor: pointer;
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.65);
+}
+.wave-sub { position: relative; z-index: 2; margin-top: 10px; font-size: 12px; color: #ccc; text-align: center; max-width: 88%; }
+
+.chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+    background: var(--surface); color: var(--text); border: 1px solid #282828;
+    padding: 8px 15px; border-radius: 20px; font-size: 13px; font-weight: 600;
+    white-space: nowrap; cursor: pointer;
+}
+.chip.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+.search-bar { display: flex; gap: 8px; margin-bottom: 14px; }
+.search-input {
+    flex: 1; background: var(--surface); color: #fff;
+    border: 1px solid #2c2c2c; border-radius: 14px;
+    padding: 12px 15px; font-size: 15px; outline: none;
+}
+.search-submit {
+    background: var(--accent); color: #000; border: none;
+    border-radius: 14px; padding: 0 18px; font-weight: 700; cursor: pointer;
+}
+
+.section-title { font-size: 16px; font-weight: 700; margin: 12px 0 8px; display: flex; justify-content: space-between; align-items: center; }
+.track-list { display: flex; flex-direction: column; gap: 6px; }
+.track-card {
+    display: flex; align-items: center; gap: 12px;
+    padding: 8px 10px; border-radius: 14px;
+    background: var(--surface); transition: background 0.15s; cursor: pointer;
+}
+.track-card.active { border: 1px solid var(--accent); background: var(--surface-hover); }
+.track-cover { width: 48px; height: 48px; border-radius: 10px; object-fit: cover; background: #222; flex-shrink: 0; }
+.track-meta { flex: 1; min-width: 0; }
+.track-title { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.track-artist { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+.tag-pill {
+    display: inline-block; font-size: 10px; padding: 1px 6px;
+    border-radius: 6px; background: #2a2a2a; color: #bbb; margin-left: 5px;
+}
+.tag-pill.discovery { background: rgba(124, 77, 255, 0.25); color: #b388ff; }
+.icon-btn {
+    background: none; border: none; color: var(--muted);
+    font-size: 18px; padding: 6px 8px; cursor: pointer;
+}
+.icon-btn.liked { color: var(--accent); }
+.icon-btn.saved { color: var(--online); }
+
+.player-dock {
+    position: fixed; bottom: 60px; left: 0; right: 0; z-index: 30;
+    background: rgba(16, 16, 16, 0.97); backdrop-filter: blur(22px);
+    border-top: 1px solid #282828; padding: 10px 14px;
+}
+.player-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.mini-cover { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; background: #222; }
+.mini-meta { flex: 1; min-width: 0; }
+.mini-title { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mini-sub { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ctrl-btn {
+    background: var(--accent); color: #000; border: none;
+    width: 38px; height: 38px; border-radius: 50%;
+    font-size: 16px; font-weight: 800; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+}
+.ctrl-btn.secondary { background: #262626; color: #fff; width: 34px; height: 34px; font-size: 13px; }
+.progress-wrap { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); }
+.progress-bar { flex: 1; accent-color: var(--accent); height: 4px; cursor: pointer; }
+
+.bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0; height: 60px; z-index: 35;
+    background: #080808; border-top: 1px solid #1f1f1f;
+    display: flex; justify-content: space-around; align-items: center;
+}
+.nav-tab {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    color: var(--muted); font-size: 11px; font-weight: 600;
+    background: none; border: none; cursor: pointer; flex: 1; padding: 6px 0;
+}
+.nav-tab.active { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <div class="logo">
+        <span>Яндекс Музыка</span>
+        <span class="badge">STANDALONE</span>
+    </div>
+    <div id="net-status" class="net-pill online">● ОНЛАЙН</div>
+</div>
+
+<!-- ВКЛАДКА 1: МОЯ ВОЛНА -->
+<div id="view-wave" class="view active">
+    <div class="wave-hero">
+        <div id="orb" class="wave-orb"></div>
+        <button class="wave-btn" onclick="togglePlayWave()">
+            <span id="hero-play-icon">▶</span>
+            <span>Моя волна</span>
+        </button>
+        <div id="wave-sub" class="wave-sub">Акустический подбор: 75% твой вайб / 25% новые горизонты</div>
+    </div>
+
+    <div class="chips">
+        <button class="chip active" onclick="selectAcousticFilter('all', this)">Поток по вкусу</button>
+        <button class="chip" onclick="selectAcousticFilter('rusrap', this)">Русский рэп / бит</button>
+        <button class="chip" onclick="selectAcousticFilter('phonk', this)">Фонк / перегруз</button>
+        <button class="chip" onclick="selectAcousticFilter('indie', this)">Пост-панк / инди</button>
+        <button class="chip" onclick="selectAcousticFilter('electro', this)">Электроника / синт</button>
+    </div>
+
+    <div class="section-title">
+        <span>Очередь волны</span>
+        <button class="chip" onclick="rebuildWaveQueue()">↻ Обновить вектор</button>
+    </div>
+    <div id="wave-list" class="track-list"></div>
+</div>
+
+<!-- ВКЛАДКА 2: ПОИСК ОНЛАЙН -->
+<div id="view-search" class="view">
+    <form class="search-bar" onsubmit="handleSearch(event)">
+        <input id="search-input" class="search-input" type="text" placeholder="Поиск по звучанию, жанру, артисту...">
+        <button class="search-submit" type="submit">Найти</button>
+    </form>
+    <div id="search-list" class="track-list"></div>
+</div>
+
+<!-- ВКЛАДКА 3: ОФЛАЙН И ЛАЙКИ -->
+<div id="view-library" class="view">
+    <div class="section-title">
+        <span>Скачано в телефон (Офлайн-память)</span>
+        <span id="profile-summary" style="font-size:11px;color:var(--accent);"></span>
+    </div>
+    <div id="offline-list" class="track-list"></div>
+
+    <div class="section-title" style="margin-top:20px;">Мне нравится (Вкусовой профиль)</div>
+    <div id="liked-list" class="track-list"></div>
+</div>
+
+<!-- НАТИВНЫЙ HTML5 ПЛЕЕР (БЕЗ ЗАВИСАЮЩИХ IFRAME) -->
+<div class="player-dock">
+    <div class="player-top">
+        <img id="p-cover" class="mini-cover" src="https://music.yandex.ru/blocks/meta/i/og-image.png" alt="">
+        <div class="mini-meta">
+            <div id="p-title" class="mini-title">Готов к воспроизведению</div>
+            <div id="p-artist" class="mini-sub">Нажми «Моя волна» для старта</div>
+        </div>
+        <button id="p-dl-btn" class="ctrl-btn secondary" onclick="downloadCurrentTrack()" title="Скачать в телефон">⬇</button>
+        <button id="p-play-btn" class="ctrl-btn" onclick="toggleAudio()">▶</button>
+        <button class="ctrl-btn secondary" onclick="playNextInQueue()">⏭</button>
+    </div>
+    <div class="progress-wrap">
+        <span id="t-cur">0:00</span>
+        <input id="t-seek" class="progress-bar" type="range" min="0" max="100" value="0" oninput="seekAudio(this.value)">
+        <span id="t-dur">0:00</span>
+    </div>
+    <audio id="audio-engine" preload="auto" crossorigin="anonymous"></audio>
+</div>
+
+<nav class="bottom-nav">
+    <button class="nav-tab active" onclick="switchView('wave', this)">
+        <span>◉</span>
+        <span>Моя волна</span>
+    </button>
+    <button class="nav-tab" onclick="switchView('search', this)">
+        <span>⌕</span>
+        <span>Поиск</span>
+    </button>
+    <button class="nav-tab" onclick="switchView('library', this)">
+        <span>⬇</span>
+        <span>Офлайн / База</span>
+    </button>
+</nav>
+
+<script src="app.js"></script>
+</body>
+</html>

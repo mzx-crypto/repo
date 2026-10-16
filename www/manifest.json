@@ -1,0 +1,17 @@
+# file: www/manifest.json
+{
+  "name": "Яндекс Музыка Free Standalone",
+  "short_name": "Музыка",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://music.yandex.ru/favicons/apple-touch-icon-180x180.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

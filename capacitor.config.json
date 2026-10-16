@@ -1,0 +1,10 @@
+# file: capacitor.config.json
+{
+  "appId": "ru.ym.standalone.wave",
+  "appName": "YM Free Wave",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  }
+}
